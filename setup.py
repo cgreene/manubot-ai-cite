@@ -10,18 +10,18 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="manubot-ai-editor",
-    version="0.4.7",
-    author="Milton Pividori",
-    author_email="miltondp@gmail.com",
-    description="A Manubot plugin to revise a manuscript using GPT-3",
+    name="manubot-ai-cite",
+    version="0.0.1",
+    author="Casey Greene",
+    author_email="Casey.S.Greene@cuanschutz.edu",
+    description="A Manubot plugin to suggest revisions using the OpenAI API",
     license="BSD-2-Clause Plus Patent",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/greenelab/manubot-ai-editor",
+    url="https://github.com/cgreene/manubot-ai-cite",
     package_dir={"": "libs"},
     packages=[
-        "manubot_ai_editor/",
+        "manubot-ai-cite/",
     ],
     python_requires=">=3.10",
     install_requires=[
