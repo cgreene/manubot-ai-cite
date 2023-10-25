@@ -1,4 +1,4 @@
-# Manubot AI Editor
+# Manubot AI Citer
 
 This package provides classes and functions for automated, AI-assisted revision of manuscripts written using [Manubot](https://manubot.org/).
 Check out the [manuscript](https://greenelab.github.io/manubot-gpt-manuscript/) for more information.

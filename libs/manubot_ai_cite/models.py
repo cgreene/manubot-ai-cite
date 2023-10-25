@@ -6,7 +6,7 @@ import time
 
 import openai
 
-from manubot_ai_editor import env_vars
+from manubot_ai_cite import env_vars
 
 
 class ManuscriptRevisionModel(ABC):

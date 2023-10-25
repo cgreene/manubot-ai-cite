@@ -1,7 +1,7 @@
 from unittest import mock
 
-from manubot_ai_editor import env_vars
-from manubot_ai_editor.models import GPT3CompletionModel
+from manubot_ai_cite import env_vars
+from manubot_ai_cite.models import GPT3CompletionModel
 
 
 def test_get_prompt_for_abstract():

@@ -2,9 +2,9 @@ import json
 import os
 from pathlib import Path
 
-from manubot_ai_editor import env_vars
-from manubot_ai_editor.models import ManuscriptRevisionModel
-from manubot_ai_editor.utils import (
+from manubot_ai_cite import env_vars
+from manubot_ai_cite.models import ManuscriptRevisionModel
+from manubot_ai_cite.utils import (
     get_yaml_field,
     SENTENCE_END_PATTERN,
 )

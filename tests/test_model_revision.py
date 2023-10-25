@@ -6,10 +6,10 @@ from unittest import mock
 
 import pytest
 
-from manubot_ai_editor import env_vars
-from manubot_ai_editor.editor import ManuscriptEditor
-from manubot_ai_editor.models import GPT3CompletionModel
-from manubot_ai_editor.utils import starts_with_similar
+from manubot_ai_cite import env_vars
+from manubot_ai_cite.editor import ManuscriptEditor
+from manubot_ai_cite.models import GPT3CompletionModel
+from manubot_ai_cite.utils import starts_with_similar
 
 
 @pytest.mark.parametrize(

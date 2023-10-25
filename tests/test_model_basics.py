@@ -8,9 +8,9 @@ from unittest import mock
 
 import pytest
 
-from manubot_ai_editor.editor import ManuscriptEditor, env_vars
-from manubot_ai_editor import models
-from manubot_ai_editor.models import GPT3CompletionModel, RandomManuscriptRevisionModel
+from manubot_ai_cite.editor import ManuscriptEditor, env_vars
+from manubot_ai_cite import models
+from manubot_ai_cite.models import GPT3CompletionModel, RandomManuscriptRevisionModel
 
 MANUSCRIPTS_DIR = Path(__file__).parent / "manuscripts"
 
