@@ -21,7 +21,7 @@ setuptools.setup(
     url="https://github.com/cgreene/manubot-ai-cite",
     package_dir={"": "libs"},
     packages=[
-        "manubot-ai-cite/",
+        "manubot_ai_cite/",
     ],
     python_requires=">=3.10",
     install_requires=[
