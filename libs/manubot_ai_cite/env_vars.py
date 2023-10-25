@@ -42,7 +42,7 @@ BEST_OF = "AI_EDITOR_BEST_OF"
 # section names. For example: '{"01.intro.md": "introduction"}'
 # Possible values for section names are: "abstract", "introduction",
 # "results", "discussion", "conclusions", "methods", and "supplementary material".
-# Take a look at function 'get_prompt' in 'libs/manubot_ai_editor/models.py'
+# Take a look at function 'get_prompt' in 'libs/manubot_ai_cite/models.py'
 # to see which prompts are used for each section.
 # Although the AI Editor tries to infer the section name from the filename,
 # sometimes filenames are not descriptive enough (e.g., "01.intro.md" or

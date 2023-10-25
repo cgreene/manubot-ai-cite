@@ -52,7 +52,7 @@ def test_model_object_init_with_openai_api_key_as_parameter():
             openai_api_key="test_value",
         )
 
-        from manubot_ai_editor import models
+        from manubot_ai_cite import models
 
         assert models.openai.api_key == "test_value"
     finally:
@@ -67,7 +67,7 @@ def test_model_object_init_with_openai_api_key_as_parameter_has_higher_priority(
         openai_api_key="test_value",
     )
 
-    from manubot_ai_editor import models
+    from manubot_ai_cite import models
 
     assert models.openai.api_key == "test_value"
 

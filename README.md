@@ -27,7 +27,7 @@ export OPENAI_API_KEY=<your-api-key>
 ```
 
 You can also provide other options that will change the behavior of the tool (such as revising certain files only).
-[This file](https://github.com/manubot/manubot-ai-editor/blob/main/libs/manubot_ai_editor/env_vars.py) documents the list of supported environment variables that can be used.
+[This file](https://github.com/manubot/manubot-ai-editor/blob/main/libs/manubot_ai_cite/env_vars.py) documents the list of supported environment variables that can be used.
 For example, to change the temperature parameter of OpenAI models, you can export the following environment variable: `export AI_EDITOR_TEMPERATURE=0.50`
 
 Then, within the root directory of your Manubot-based manuscript, run the following commands (**IMPORTANT:** this will overwrite your original manuscript!):
@@ -54,8 +54,8 @@ The Python code below shows how to use the API:
 import shutil
 from pathlib import Path
 
-from manubot_ai_editor.editor import ManuscriptEditor
-from manubot_ai_editor.models import GPT3CompletionModel
+from manubot_ai_cite.editor import ManuscriptEditor
+from manubot_ai_cite.models import GPT3CompletionModel
 
 # create a manuscript editor object
 # here content_dir points to the "content" directory of the Manubot-based
