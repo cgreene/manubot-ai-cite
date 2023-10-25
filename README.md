@@ -17,7 +17,7 @@ Then, follow [these instructions](https://github.com/manubot/rootstock/blob/main
 To use the tool from the command line, you first need to install Manubot in a Python environment:
 
 ```bash
-pip install --upgrade manubot[ai-rev]
+pip install --upgrade manubot[ai-cite]
 ```
 
 You also need to export an environment variable with the OpenAI's API key:
@@ -33,7 +33,7 @@ For example, to change the temperature parameter of OpenAI models, you can expor
 Then, within the root directory of your Manubot-based manuscript, run the following commands (**IMPORTANT:** this will overwrite your original manuscript!):
 
 ```bash
-manubot ai-revision --content-directory content/
+manubot ai-cite --content-directory content/
 ```
 
 The tool will revise each paragraph of your manuscript and write back the revised files in the same directory.
