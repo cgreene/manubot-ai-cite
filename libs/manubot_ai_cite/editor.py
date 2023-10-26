@@ -103,7 +103,7 @@ class ManuscriptEditor:
             paragraph_text = ManuscriptEditor.convert_sentence_ends_to_newlines(
                 paragraph_text
             )
-            return paragraph_text, ""
+            return ""
 
         error_message = None
         try:
@@ -134,7 +134,7 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
 -->
             """.strip()
 
-        return paragraph_text, suggestions
+        return suggestions
 
     @staticmethod
     def convert_sentence_ends_to_newlines(paragraph: str) -> str:
