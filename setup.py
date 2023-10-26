@@ -18,7 +18,7 @@ setuptools.setup(
     license="BSD-2-Clause Plus Patent",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/cgreene/manubot-ai-cite",
+    url="https://github.com/chpdm/manubot-ai-cite",
     package_dir={"": "libs"},
     packages=[
         "manubot_ai_cite/",

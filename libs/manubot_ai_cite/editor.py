@@ -107,21 +107,11 @@ class ManuscriptEditor:
 
         error_message = None
         try:
-            #suggestions = revision_model.revise_paragraph(
-            #    paragraph_text,
-            #    section_name,
-            #)
-            suggestions = f"""
-                [
-                {
-                    file: "content/02.methods.md",
-                    line: 5,
-                    title: "title for my annotation",
-                    message: "my message",
-                    annotation_level: "failure"
-                }
-                ]
-            """
+            # suggestions = revision_model.revise_paragraph(
+            #     paragraph_text,
+            #     section_name,
+            # )
+            suggestions = '[{"file": "content/methods.md", "line": 5, "title": "title for my annotation", "message": "my message", "annotation_level": "failure"}]'
             if suggestions.strip() == "":
                 raise Exception("The AI model returned an empty string ('')")
             suggest_obj = json.loads(suggestions)
@@ -133,7 +123,6 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
 {str(e)}
 -->
             """.strip()
-
         return suggestions
 
     @staticmethod
@@ -221,7 +210,7 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
 
         output_dir = Path(output_dir).resolve()
         assert output_dir.exists(), f"Output directory {output_dir} does not exist"
-        output_filepath = output_dir / input_filename
+        output_filepath = str( output_dir / input_filename ) + ".json"
 
         # infer section name from input filename if not provided
         if section_name is None:
@@ -240,11 +229,9 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
                 if line.startswith("<!--"):
                     # This is an HTML comment.
                     while line is not None and not line.strip().endswith("-->"):
-                        outfile.write(line)
                         line = next(infile, None)
 
                     if line is not None and line.strip().endswith("-->"):
-                        outfile.write(line)
                         line = next(infile, None)
 
                 # if line is starting either an "image paragraph", a "table
@@ -257,15 +244,12 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
                         current_table_paragraph = True
 
                     while line is not None and line.strip() != "":
-                        outfile.write(line)
                         line = next(infile, None)
 
                 # if the previous line is part of an image definition, then skip all those lines
                 if prev_line is not None and prev_line.startswith(("![",)):
-                    outfile.write(prev_line)
 
                     while line is not None and line.strip() != "":
-                        outfile.write(line)
                         line = next(infile, None)
 
                     paragraph = []
@@ -280,7 +264,6 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
                     and line.startswith("Table: ")
                 ):
                     while line is not None and line.strip() != "":
-                        outfile.write(line)
                         line = next(infile, None)
 
                     # we finished processing the "table paragraph"
@@ -289,11 +272,6 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
                 # stop if we reached the end of the file
                 if line is None:
                     break
-
-                # if the line is empty and we didn't start a paragraph yet,
-                # write it directly to the output file
-                if line.strip() == "" and len(paragraph) == 0:
-                    outfile.write(line)
 
                 # If the line is blank, it indicates the end of a paragraph
                 elif line.strip() == "":
@@ -324,23 +302,22 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
                             prev_line += "\n"
 
                     # revise and write paragraph to output file
-                    print(f"JSON suggest: {self.suggest_paragraph_cites(paragraph, revision_model, section_name)}", flush=True)
-                    #suggestions.append(json.loads(self.suggest_paragraph_cites(
-                    #    paragraph, revision_model, section_name
-                    #)))
+                    try:
+                        suggest_txt = self.suggest_paragraph_cites(paragraph, revision_model, section_name)
+                        if len(suggest_txt.strip()):
+                            suggest = json.loads(suggest_txt)
+                            suggestions.extend(suggest)
+                    except json.decoder.JSONDecodeError:
+                        print("error")
 
                     # clear the paragraph list
                     if line.strip() == "":
-                        outfile.write(line)
                         paragraph = []
                     else:
-                        outfile.write(prev_line)
 
                         if line.startswith("#"):
-                            outfile.write(line)
                             paragraph = []
                         elif line.startswith("|"):
-                            outfile.write(line)
                             paragraph = []
                         else:
                             paragraph = [line.strip()]
@@ -365,11 +342,12 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
 
             # If there's any remaining paragraph, process and write it to the
             # output file
-            #if paragraph:
-            #    suggestions.append(json.loads(self.suggest_paragraph_cites(
-            #            paragraph, revision_model, section_name
-            #    )))
-        print(suggestions)
+            try:
+                suggest = json.loads(self.suggest_paragraph_cites(paragraph, revision_model, section_name))
+                suggestions.extend(suggest)
+            except json.decoder.JSONDecodeError:
+                pass
+            outfile.write(json.dumps(suggestions))
 
     def suggest_manuscript(
         self,
@@ -382,6 +360,7 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
         by name, and writes a json file for each to output directory.
         """
 
+        suggestions = []
         # if specified, obtain the list of files names that have to be revised
         filenames_to_revise = None
         if env_vars.FILENAMES_TO_REVISE in os.environ:
@@ -398,6 +377,8 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
         for filename in sorted(self.content_dir.glob("*.md")):
             # ignore front-matter and abstract files
             if "front-matter" in filename.name:
+                continue
+            if "back-matter" in filename.name:
                 continue
             if "abstract" in filename.name:
                 continue
@@ -418,3 +399,8 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
                 revision_model,
                 section_name=filename_section,
             )
+            suggest = json.load(open(str(self.content_dir / filename.name) + ".json",'r'))
+            suggestions.extend(suggest)
+        outfile = open("content/cites.json", 'w')
+        outfile.write(json.dumps(suggestions))
+        outfile.close()
