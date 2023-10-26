@@ -324,12 +324,12 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
                             prev_line += "\n"
 
                     # revise and write paragraph to output file
-                    print(self.suggest_paragraph_cites(
+                    print(f"JSON suggest: {self.suggest_paragraph_cites(
                         paragraph, revision_model, section_name
-                    ))
-                    suggestions.append(json.loads(self.suggest_paragraph_cites(
-                        paragraph, revision_model, section_name
-                    )))
+                    )}", flush=True)
+                    #suggestions.append(json.loads(self.suggest_paragraph_cites(
+                    #    paragraph, revision_model, section_name
+                    #)))
 
                     # clear the paragraph list
                     if line.strip() == "":
@@ -367,10 +367,10 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
 
             # If there's any remaining paragraph, process and write it to the
             # output file
-            if paragraph:
-                suggestions.append(json.loads(self.suggest_paragraph_cites(
-                        paragraph, revision_model, section_name
-                )))
+            #if paragraph:
+            #    suggestions.append(json.loads(self.suggest_paragraph_cites(
+            #            paragraph, revision_model, section_name
+            #    )))
         print(suggestions)
 
     def suggest_manuscript(
