@@ -270,98 +270,56 @@ class GPT3CompletionModel(ManuscriptRevisionModel):
              2) the paragraph to revise.
         """
 
-        custom_prompt = None
-        if ((c := os.environ.get(env_vars.CUSTOM_PROMPT, "").strip()) and c != ""):
-            custom_prompt = c
-            print(
-                f"Using custom prompt from environment variable '{env_vars.CUSTOM_PROMPT}'"
-            )
+        prompt = f"""
+            You are a citation support assistant.
+            Your job is to identify software that might be missing a citation.
+            A citation contains metadata like the author and date, and usually directly follows the reference to the software.
+            Let me give you some examples of citations.
 
-            placeholders = {
-                "paragraph_text": paragraph_text.strip(),
-                "section_name": section_name,
-                "title": self.title,
-                "keywords": ", ".join(self.keywords),
-            }
+            EXAMPLES OF SOFTWARE MENTIONS WITH CITATIONS:
 
-            # FIXME: if {paragraph_text} is in the prompt, this won't work for the edits endpoint
-            #  a simple workaround is to remove {paragraph_text} from the prompt
-            prompt = custom_prompt.format(**placeholders)
-        elif section_name in ("abstract",):
-            prompt = f"""
-                Revise the following paragraph from the {section_name} of an academic paper (with the title '{self.title}' and keywords '{", ".join(self.keywords)}')
-                so the research problem/question is clear,
-                   the solution proposed is clear,
-                   the text grammar is correct, spelling errors are fixed,
-                   and the text is in active voice and has a clear sentence structure
-            """
-        elif section_name in ("introduction", "discussion"):
-            prompt = f"""
-                Revise the following paragraph from the {section_name.capitalize()} section of an academic paper (with the title '{self.title}' and keywords '{", ".join(self.keywords)}')
-                so
-                   most of the citations to other academic papers are kept,
-                   the text minimizes the use of jargon,
-                   the text grammar is correct, spelling errors are fixed,
-                   and the text has a clear sentence structure
-            """
-        elif section_name in ("results",):
-            prompt = f"""
-                Revise the following paragraph from the {section_name.capitalize()} section of an academic paper (with the title '{self.title}' and keywords '{", ".join(self.keywords)}')
-                so
-                   most references to figures and tables are kept,
-                   the details are enough to clearly explain the outcomes,
-                   sentences are concise and to the point,
-                   the text minimizes the use of jargon,
-                   the text grammar is correct, spelling errors are fixed,
-                   and the text has a clear sentence structure
-            """
-        elif section_name in ("methods",):
-            equation_definition = r"$$ ... $$ {#id}"
-            revise_sentence = f"""
-                Revise the paragraph(s) below from
-                the {section_name.capitalize()} section of an academic paper
-                (with the title '{self.title}' and keywords '{", ".join(self.keywords)}')
-            """.strip()
+            Input: The genes exhibiting high expression (≥100 normalized RPKM values) were mapped on functional bins assigned to different pathways in MapMan (Smith et. al., 2009)
+            Software: MapMan
 
-            prompt = f"""
-                {revise_sentence}
-                so
-                   most of the citations to other academic papers are kept,
-                   most of the technical details are kept,
-                   most references to equations (such as "Equation (@id)") are kept,
-                   all equations definitions (such as '{equation_definition}') are included with newlines before and after,
-                   the most important symbols in equations are defined,
-                   spelling errors are fixed, the text grammar is correct,
-                   and the text has a clear sentence structure
-            """.strip()
-        else:
-            prompt = "Revise the following paragraph"
+            Input: Flowing Software version 2.5.1 (Perttu, 2008) was used for downstream analysis.
+            Software: Flowing Software
 
-            if section_name is not None and section_name != "":
-                prompt += f" from the {section_name.capitalize()} section"
+            Input: In case of a range of K values, the true K was determined as a value between the estimates predicted by fastSTRUCTURE (Green and Zuntz, 2009] and based on what made most biological sense
+            Software: fastSTRUCTURE
 
-            prompt += f" of an academic paper (with title '{self.title}' and keywords '{', '.join(self.keywords)}')"
-            prompt += """
-                so
-                    the text minimizes the use of jargon,
-                    the text grammar is correct, spelling errors are fixed,
-                    and the text has a clear sentence structure
-            """
+            Input: This design was based on the Mixture Design (D-optimal, two mixture components, two factors, the limits: 5%–95%) option in the Design Expert 7.1.3 Software [Acme Corp., 2023] that generated the experimental scheme (13 standard/run) randomly
+            Software: Design Expert
 
-        # replace multiple spaces with a single space only if there is no custom prompt,
-        # since otherwise the custom prompt might have the paragraph text within, and
-        # we are not supposed to reformat that here.
-        if custom_prompt is None:
-            prompt = self.several_spaces_pattern.sub(" ", prompt).strip()
+            Input: Data from this study were processed with GraphPad Prism 8 [GraphPad Software, USA] and expressed as mean ± standard deviation (x ± s) 
+            Software: GraphPad Prism
 
-        if self.endpoint != "edits":
-            if custom_prompt is not None and "{paragraph_text}" in custom_prompt:
-                return prompt
+            EXAMPLES OF SOFTWARE MENTIONS WITHOUT CITATIONS:
 
-            return f"{prompt}.\n\n{paragraph_text.strip()}"
-        else:
-            prompt = prompt.replace("the following paragraph", "this paragraph")
-            return f"{prompt}.", paragraph_text.strip()
+            Input: This in turn will require improved algorithms, implemented in SHELXE, that take into account the unique aspects of electron scattering.
+            Software: SHELXE
+
+            Input: The coexpression networks and hub genes in vital modules were visualized and analyzed by Cytoscape software (Version 3.5.1) 13.
+            Software: Cytoscape
+
+            Input: For algorithms providing multiple transcript-level predictions (i.e., miRanda-MicroCosm, PACCMIT-CDS, and TargetSpy), the transcript with the best score was selected as the representative transcript isoform 
+            Software: TargetSpy
+
+            Input: We used SPSS version 26.0 to assess hypotheses and research questions
+            Software: SPSS
+
+            Now, it's time to use what you have learned.
+
+            For each of the software references you can find in text between <begin_text> and <end_text> add it to a JSON list that also notes whether a citation is present or missing.
+
+            <begin_text>
+        """
+
+        closing = f"""
+        <end_text>
+        """
+        
+        return f"{prompt}.\n{paragraph_text.strip()}\n{closing}"
+
 
     def get_max_tokens(self, paragraph_text: str, fraction: float = 2.0) -> int:
         """
