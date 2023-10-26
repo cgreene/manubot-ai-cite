@@ -191,33 +191,30 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
     def suggest_file(
         self,
         input_filename: str,
-        output_dir: Path | str,
         revision_model: ManuscriptRevisionModel,
         section_name: str = None,
-    ):
+    ) -> list:
         """
         It revises an entire Markdown file and writes annotations of suggested citations to an output directory.
         The output file will have the same name as the input file but a json extension.
 
         Args:
             input_filename (str): name of the file to revise. It must exists in the content directory of the manuscript.
-            output_dir (Path | str): path to the directory where the revised file will be written.
             revision_model (ManuscriptRevisionModel): model to use for revision.
             section_name (str, optional): Defaults to None. If so, it will be inferred from the filename.
+        
+        Returns:
+            list of suggested citations
         """
         input_filepath = self.content_dir / input_filename
         assert input_filepath.exists(), f"Input file {input_filepath} does not exist"
-
-        output_dir = Path(output_dir).resolve()
-        assert output_dir.exists(), f"Output directory {output_dir} does not exist"
-        output_filepath = str( output_dir / input_filename ) + ".json"
 
         # infer section name from input filename if not provided
         if section_name is None:
             section_name = self.get_section_from_filename(input_filename)
 
         suggestions = []
-        with open(input_filepath, "r") as infile, open(output_filepath, "w") as outfile:
+        with open(input_filepath, "r") as infile:
             # Initialize a temporary list to store the lines of the current paragraph
             paragraph = []
 
@@ -347,7 +344,7 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
                 suggestions.extend(suggest)
             except json.decoder.JSONDecodeError:
                 pass
-            outfile.write(json.dumps(suggestions))
+            return suggestions
 
     def suggest_manuscript(
         self,
@@ -393,13 +390,12 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
 
             print(f"Revising file {filename.name}", flush=True)
 
-            self.suggest_file(
+            suggest = self.suggest_file(
                 filename.name,
-                output_dir,
                 revision_model,
                 section_name=filename_section,
             )
-            suggest = json.load(open(str(self.content_dir / filename.name) + ".json",'r'))
+            print(suggest)
             suggestions.extend(suggest)
         outfile = open("content/cites.json", 'w')
         outfile.write(json.dumps(suggestions))
