@@ -81,7 +81,7 @@ class ManuscriptEditor:
         paragraph: list[str],
         revision_model: ManuscriptRevisionModel,
         section_name: str = None,
-    ) -> None | tuple[str, str]:
+    ) -> str:
         """
         Revises and writes a paragraph to the output file.
 
@@ -92,8 +92,7 @@ class ManuscriptEditor:
             outfile: file object to write the revised paragraph to.
 
         Returns:
-            None if outfile is specified. Otherwise, it returns a tuple with
-            the submitted paragraph and the json suggestions.
+            json string with the suggestions.
         """
         # Process the paragraph and revise it with model
         paragraph_text = ManuscriptEditor.prepare_paragraph(paragraph)
@@ -228,6 +227,7 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
         if section_name is None:
             section_name = self.get_section_from_filename(input_filename)
 
+        suggestions = []
         with open(input_filepath, "r") as infile, open(output_filepath, "w") as outfile:
             # Initialize a temporary list to store the lines of the current paragraph
             paragraph = []
@@ -324,9 +324,9 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
                             prev_line += "\n"
 
                     # revise and write paragraph to output file
-                    self.revise_and_write_paragraph(
-                        paragraph, revision_model, section_name, outfile
-                    )
+                    suggestions.append(json.loads(self.suggest_paragraph_cites(
+                        paragraph, revision_model, section_name
+                    )))
 
                     # clear the paragraph list
                     if line.strip() == "":
@@ -365,9 +365,10 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
             # If there's any remaining paragraph, process and write it to the
             # output file
             if paragraph:
-                self.revise_and_write_paragraph(
-                    paragraph, revision_model, section_name, outfile
-                )
+                suggestions.append(json.loads(self.suggest_paragraph_cites(
+                        paragraph, revision_model, section_name
+                )))
+        print(suggestions)
 
     def suggest_manuscript(
         self,
