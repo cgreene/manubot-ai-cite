@@ -77,11 +77,10 @@ class ManuscriptEditor:
         return paragraph_text
 
     @staticmethod
-    def revise_and_write_paragraph(
+    def suggest_paragraph_cites(
         paragraph: list[str],
         revision_model: ManuscriptRevisionModel,
         section_name: str = None,
-        outfile=None,
     ) -> None | tuple[str, str]:
         """
         Revises and writes a paragraph to the output file.
@@ -94,7 +93,7 @@ class ManuscriptEditor:
 
         Returns:
             None if outfile is specified. Otherwise, it returns a tuple with
-            the submitted paragraph and the revised paragraph.
+            the submitted paragraph and the json suggestions.
         """
         # Process the paragraph and revise it with model
         paragraph_text = ManuscriptEditor.prepare_paragraph(paragraph)
@@ -105,21 +104,28 @@ class ManuscriptEditor:
             paragraph_text = ManuscriptEditor.convert_sentence_ends_to_newlines(
                 paragraph_text
             )
-            if outfile is not None:
-                outfile.write(paragraph_text)
-                return
-            else:
-                return paragraph_text, paragraph_text
+            return paragraph_text, ""
 
         error_message = None
         try:
-            paragraph_revised = revision_model.revise_paragraph(
-                paragraph_text,
-                section_name,
-            )
-
-            if paragraph_revised.strip() == "":
+            #suggestions = revision_model.revise_paragraph(
+            #    paragraph_text,
+            #    section_name,
+            #)
+            suggestions = f"""
+                [
+                {
+                    file: "content/02.methods.md",
+                    line: 5,
+                    title: "title for my annotation",
+                    message: "my message",
+                    annotation_level: "failure"
+                }
+                ]
+            """
+            if suggestions.strip() == "":
                 raise Exception("The AI model returned an empty string ('')")
+            suggest_obj = json.loads(suggestions)
         except Exception as e:
             error_message = f"""
 <!--
@@ -129,22 +135,7 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
 -->
             """.strip()
 
-        if error_message is not None:
-            paragraph_revised = (
-                error_message
-                + "\n"
-                + ManuscriptEditor.convert_sentence_ends_to_newlines(paragraph_text)
-            )
-        else:
-            # put sentences into new lines
-            paragraph_revised = ManuscriptEditor.convert_sentence_ends_to_newlines(
-                paragraph_revised
-            )
-
-        if outfile is not None:
-            outfile.write(paragraph_revised + "\n")
-        else:
-            return paragraph_text, paragraph_revised
+        return paragraph_text, suggestions
 
     @staticmethod
     def convert_sentence_ends_to_newlines(paragraph: str) -> str:
@@ -209,7 +200,7 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
         prefixes = ("![", "|", "<!--", "$$", "#", "```")
         return line.startswith(prefixes) or (include_blank and line.strip() == "")
 
-    def revise_file(
+    def suggest_file(
         self,
         input_filename: str,
         output_dir: Path | str,
@@ -217,8 +208,8 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
         section_name: str = None,
     ):
         """
-        It revises an entire Markdown file and writes the revised file to the output directory.
-        The output file will have the same name as the input file.
+        It revises an entire Markdown file and writes annotations of suggested citations to an output directory.
+        The output file will have the same name as the input file but a json extension.
 
         Args:
             input_filename (str): name of the file to revise. It must exists in the content directory of the manuscript.
@@ -378,7 +369,7 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
                     paragraph, revision_model, section_name, outfile
                 )
 
-    def revise_manuscript(
+    def suggest_manuscript(
         self,
         output_dir: Path | str,
         revision_model: ManuscriptRevisionModel,
@@ -386,7 +377,7 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
     ):
         """
         Revises all the files in the content directory of the manuscript sorted
-        by name, and writes each file in the output directory.
+        by name, and writes a json file for each to output directory.
         """
 
         # if specified, obtain the list of files names that have to be revised
@@ -403,18 +394,13 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
                 filenames_to_revise = None
 
         for filename in sorted(self.content_dir.glob("*.md")):
-            # ignore front-matter file
+            # ignore front-matter and abstract files
             if "front-matter" in filename.name:
+                continue
+            if "abstract" in filename.name:
                 continue
 
             filename_section = self.get_section_from_filename(filename.name)
-
-            # we do not process the file if it has no section and there is no custom prompt
-            if filename_section is None and (
-                env_vars.CUSTOM_PROMPT not in os.environ
-                or os.environ[env_vars.CUSTOM_PROMPT].strip() == ""
-            ):
-                continue
 
             if (
                 filenames_to_revise is not None
@@ -424,7 +410,7 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
 
             print(f"Revising file {filename.name}", flush=True)
 
-            self.revise_file(
+            self.suggest_file(
                 filename.name,
                 output_dir,
                 revision_model,

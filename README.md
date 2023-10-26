@@ -1,11 +1,10 @@
 # Manubot AI Citer
 
-This package provides classes and functions for automated, AI-assisted revision of manuscripts written using [Manubot](https://manubot.org/).
-Check out the [manuscript](https://greenelab.github.io/manubot-gpt-manuscript/) for more information.
+This package provides classes and functions for automated, AI-assisted tagging of potential software citations in manuscripts written using [Manubot](https://manubot.org/).
 
 ## Usage
 
-The Manubot AI Editor can be used from the GitHub repository of a Manubot-based manuscript, from the command line, or from Python code.
+The Manubot AI Cite can be used from the GitHub repository of a Manubot-based manuscript, from the command line, or from Python code.
 
 ### Manubot-based manuscript repository
 
@@ -30,13 +29,13 @@ You can also provide other options that will change the behavior of the tool (su
 [This file](https://github.com/manubot/manubot-ai-editor/blob/main/libs/manubot_ai_cite/env_vars.py) documents the list of supported environment variables that can be used.
 For example, to change the temperature parameter of OpenAI models, you can export the following environment variable: `export AI_EDITOR_TEMPERATURE=0.50`
 
-Then, within the root directory of your Manubot-based manuscript, run the following commands (**IMPORTANT:** this will overwrite your original manuscript!):
+Then, within the root directory of your Manubot-based manuscript, run the following commands (**IMPORTANT:** this will add a json of suggestions to original manuscript!):
 
 ```bash
 manubot ai-cite --content-directory content/
 ```
 
-The tool will revise each paragraph of your manuscript and write back the revised files in the same directory.
+The tool will suggest changes for each file of your manuscript and write the suggestions in a github-compatible format to the same directory.
 Finally, you can select which changes you want to keep or discard.
 
 ### Python API
@@ -45,7 +44,7 @@ There is also a Python API that you can use to revise your manuscript.
 In this case, you don't need to also install Manubot but only this package:
 
 ```bash
-pip install -U manubot-ai-editor
+pip install -U manubot-ai-cite
 ```
 
 The Python code below shows how to use the API:
@@ -76,9 +75,9 @@ shutil.rmtree(output_folder, ignore_errors=True)
 output_folder.mkdir(parents=True, exist_ok=True)
 
 # then revise the manuscript
-me.revise_manuscript(output_folder, model)
+me.suggest_manuscript(output_folder, model)
 
-# the revised manuscript is now in the folder pointed by `output_folder`
+# the json suggestions are now in the folder pointed by `output_folder`
 
 # uncomment the following code if you want to write back the revised manuscript to
 # the content folder
@@ -99,5 +98,5 @@ We currently support the following OpenAI endpoints:
 * [`Edits`](https://platform.openai.com/docs/api-reference/edits)
 * [`ChatCompletion`](https://platform.openai.com/docs/api-reference/chat)
   * *Note:* this endpoint is not fully implemented yet.
-    The current implementation uses the chat completion endpoint in a similar way as we use the completion endpoint (each paragraph is revised independently in a query).
+    The current implementation uses the chat completion endpoint in a similar way as we use the completion endpoint (each paragraph is revisuggested independently in a query).
     This is because new models such as `gpt-3.5-turbo` or `gpt-4` are only available through the chat completion endpoint.
