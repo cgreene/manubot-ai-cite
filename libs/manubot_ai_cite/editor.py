@@ -324,6 +324,9 @@ ERROR: the paragraph below could not be revised with the AI model due to the fol
                             prev_line += "\n"
 
                     # revise and write paragraph to output file
+                    print(self.suggest_paragraph_cites(
+                        paragraph, revision_model, section_name
+                    ))
                     suggestions.append(json.loads(self.suggest_paragraph_cites(
                         paragraph, revision_model, section_name
                     )))
